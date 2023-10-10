@@ -1,10 +1,12 @@
 import pygame.event
 import random
 import Struct
+import save
 
 
 class ReactionGame:
     def __init__(self, window, font, exit_button_fnc):
+        self.data = save.DataStructure()
         self.font = font
         self.score_font = pygame.font.Font(self.font, 20)
         self.restart_game_button = Struct.Button(window=window, x=161, y=450, width=150, height=50, text_size=15,
@@ -22,8 +24,12 @@ class ReactionGame:
         self.event_end_reaction_good_id = pygame.USEREVENT
         self.event_end_reaction_bad_id = pygame.USEREVENT + 2
         self.event_start_reaction_id = pygame.USEREVENT + 1
-        self.score = None
+        self.score = 0
         self.game_ended = False
+
+    def get_score(self):
+        print(self.score)
+        return self.score
 
     def start_game(self):
         self.game_ended = False
@@ -48,8 +54,8 @@ class ReactionGame:
                 elif self.exit_button.collidepoint(event.pos):
                     self.exit_button.button_function_complete()
             if event.type == self.event_end_reaction_good_id:
-                self.game_ended = True
                 self.score = event.score
+                self.game_ended = True
             elif event.type == self.event_end_reaction_bad_id:
                 self.game_ended = True
                 self.score = -1
@@ -68,3 +74,5 @@ class ReactionGame:
         score_render = self.score_font.render(f'{self.score}', True, (0, 0, 0))
         self.window.blit(score_render, ((480-self.score_font.size(f'{self.score}')[0]) // 2, 200))
         self.restart_game_button.draw_button()
+
+

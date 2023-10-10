@@ -92,7 +92,8 @@ class RememberColorsGame:
                             if rectangle.collidepoint(__events[0]):
                                 rectangle.is_in_using = True
                         if self.end_button.collidepoint(__events[0]):
-                            self.end_button.button_function_complete((__events[0], __events[1]))
+                            self.end_game()
+                            self.end_button.button_function_complete(self.win)
                     if event.type == pygame.MOUSEMOTION:
                         for rectangle in self.rectangles[::-1]:
                             if rectangle.is_in_using:
@@ -187,7 +188,7 @@ class RememberColorsGame:
                 )
             )
 
-    def end_game(self, args):
+    def end_game(self):
         for rectangle in self.rectangles:
             pos_x, pos_y = position_in_the_table(rectangle.id, 3)
             if not (rectangle.left == pos_x and rectangle.top == pos_y):
@@ -201,4 +202,6 @@ class RememberColorsGame:
 
     def end_button_fnc_set(self, function):
         self.end_button.button_function = function
+
+
 

@@ -1,6 +1,5 @@
 import pygame
 
-
 class Rectangle(pygame.Rect):
     def __init__(self, window, x=0, y=0, width=0, height=0,
                  bgcolor=0, border_size=0, border_color=0, border_radius=0):
@@ -26,16 +25,6 @@ class Rectangle(pygame.Rect):
             if self.border_size != 0:
                 pygame.draw.rect(self.window, self.border_color, [x, y, width, height],
                                  self.border_size, border_radius=self.border_radius)
-
-    def border_size_change(self, end_border_size, border_size_step):
-        if end_border_size != self.border_size:
-            if end_border_size - self.border_size < 0:
-                self.border_size -= border_size_step
-            elif end_border_size - self.border_size > 0:
-                self.border_size += border_size_step
-
-    def rotate(self):
-        self.width, self.height = self.height, self.width
 
 
 class RectangleForGame(Rectangle):
@@ -129,39 +118,6 @@ class Button(Rectangle):
         else:
             self.button_function()
 
-    def change_text_color(self, color_step_rgb=(), end_color=None):
-        end_color_r = end_color[0]  # Конечный цвет красный канал
-        end_color_g = end_color[1]  # Конечный цвет зеленый канал
-        end_color_b = end_color[2]  # Конечный цвет синий канал
-        color_step_r = color_step_rgb[0]  # Шаг красного канала
-        color_step_g = color_step_rgb[1]  # Шаг зеленого канала
-        color_step_b = color_step_rgb[2]  # Шаг синего канала
-        color_r = self.text_color[0]  # Красный канал
-        color_g = self.text_color[1]  # Зеленый канал
-        color_b = self.text_color[2]  # Синий канал
-        # проверка на осмысленность перемены цвета
-        if color_r != end_color_r or color_b != end_color_b or color_g != end_color_g:
-            if end_color_r - color_r > 0:
-                new_color_r = color_step_r + color_r
-            elif end_color_r - color_r < 0:
-                new_color_r = color_r - color_step_r
-            else:
-                new_color_r = color_r
-            if end_color_g - color_g > 0:
-                new_color_g = color_step_g + color_g
-            elif end_color_g - color_g < 0:
-                new_color_g = color_g - color_step_g
-            else:
-                new_color_g = color_g
-            if end_color_b - color_b > 0:
-                new_color_b = color_step_b + color_b
-            elif end_color_b - color_b < 0:
-                new_color_b = color_b - color_step_b
-            else:
-                new_color_b = color_b
-            if 0 <= new_color_r <= 255 and 0 <= new_color_g <= 255 and 0 <= new_color_b <= 255:
-                self.text_color = (new_color_r, new_color_g, new_color_b)
-
 
 class ButtonWithImg(Button):
     def __init__(self, window, x=0, y=0, width=0, height=0, text_size=0, border_size=0, bgcolor=0, text_color=0,
@@ -250,7 +206,7 @@ class GameWidgetTop:
         self.img_prof = pygame.transform.scale(self.img_prof, (60, 60))
         self.img_button = pygame.image.load(img_button)
         self.img_button = pygame.transform.scale(self.img_button, (30, 30))
-        text_font = pygame.font.Font(font, height // 6)
+        text_font = pygame.font.Font(font, height // 4)
         text_font_1 = pygame.font.Font(font_1, height // 6)
         self.text = text_font.render(text, True, (0, 0, 0))
         self.text_level = text_font_1.render(text_level, True, (128, 128, 128))

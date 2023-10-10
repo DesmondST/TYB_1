@@ -2,6 +2,8 @@ import Struct
 import math
 import random
 import pygame
+from save import *
+import save
 
 
 def is_simple(a):
@@ -35,6 +37,9 @@ class AriphmeticGame:
         self.render_main_text = self.main_font.render('Решите пример', True, (0, 0, 0))
         self.expression_font = pygame.font.Font(font, 25)
         self.game_logic()
+
+    def get_score(self):
+        return self.score
 
     @staticmethod
     def generate_expression():
@@ -133,3 +138,4 @@ class AriphmeticGame:
                 if button.collidepoint(event.pos):
                     button.button_function_complete()
         self.game_ended = True
+

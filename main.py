@@ -1,9 +1,12 @@
 import pygame.image
 import remember_colors
+import save
 from Struct import *
 from math import ceil
 import ariphmetic
 import reaction_game
+from save import *
+from ariphmetic import AriphmeticGame
 
 
 roboto = 'fonts/font1_roboto.ttf'
@@ -12,8 +15,15 @@ Srbija = 'fonts/Srbija Sans.otf'
 
 class Menu:
     def __init__(self, __window):
+        self.data = save.DataStructure()
+        print(self.data.scores)
+        print(self.data.get_data())
         # Основные переменные и флаги
         self.window = __window
+        self.need_input = False
+        self.input_text = ''
+        self.backspacing = False
+        self.backspacing_wait = 10000
         self.width = window.get_width()
         self.height = window.get_height()
         self.is_main_menu = True
@@ -29,6 +39,8 @@ class Menu:
         self.is_reaction_game = False
         self.game_is_started = False
         self.game_is_ariphmetic = False
+        self.is_end_game = False
+
         # Элементы интерфейса
         self.tyb_logo = pygame.image.load('images/tyb.png')
         self.information_foto = pygame.image.load('images/information_foto.jpg')
@@ -58,13 +70,6 @@ class Menu:
             window=self.window, border_size=4, border_color=(0, 0, 0),
             text_size=25, button_function=self.start_menu, bgcolor=(3, 3, 3), text_color=(255, 255, 255), text="Начать",
             border_radius=8
-        )
-        # Кнопка входа и анимационный прямоугольник
-        self.login_button = Button(
-            width=300, height=55, x=(self.width - 300) // 2, y=(self.height - 158),
-            window=self.window, border_size=4, border_color=(0, 0, 0),
-            text_size=20, button_function=self.login_menu, bgcolor=0, text_color=(0, 0, 0), text="Вы уже с нами? Войти"
-            , border_radius=8
         )
 
         # Кнопка информационной страницы
@@ -134,7 +139,7 @@ class Menu:
         self.button_3 = Button(
             width=20, height=20, x=10, y=(self.height - 30),
             window=self.window, border_size=4, border_color=(0, 0, 0),
-            text_size=1, button_function=self.choice_menu, bgcolor=(3, 3, 3), text_color=(3, 3, 3),
+            text_size=1, button_function=self.start_menu, bgcolor=(3, 3, 3), text_color=(3, 3, 3),
             text=".", border_radius=8
         )
         self.button_4 = Button(
@@ -167,6 +172,12 @@ class Menu:
             text_size=1, button_function=self.game_menu, bgcolor=(3, 3, 3), text_color=(3, 3, 3),
             text=".", border_radius=8
         )
+        self.end_button = Button(
+            width=150, height=50, x=160, y=400,
+            window=self.window, border_size=4, border_color=(0, 0, 0),
+            text_size=20, button_function=self.game_menu, bgcolor=(3, 3, 3), text_color=(255, 255, 255),
+            text="ВЫЙТИ", border_radius=8
+        )
 
 
 
@@ -184,6 +195,9 @@ class Menu:
                                                           width=1, height=200, bgcolor=(128, 128, 128))
         self.department_of_registration_bottom = Rectangle(self.window, x=(self.width - 300) // 2, y=self.height - 180,
                                                           width=300, height=3, bgcolor=(128, 128, 128))
+        self.field_of_registration = Rectangle(self.window, x=(self.width - 300) // 2, y=self.height - 400,
+                                                           width=300, height=40, bgcolor=(255, 255, 255), border_radius=7,
+                                               border_color=(12, 0, 0), border_size=2)
         # Интерфейс меню для выбора дальнейшего пути
         self.department_of_choice_top = Rectangle(self.window, x=(self.width - 250) // 2, y=135,
                                                         width=250, height=3, bgcolor=(128, 128, 128))
@@ -193,7 +207,7 @@ class Menu:
                                                            width=250, height=3, bgcolor=(128, 128, 128))
         self.game_widget1 = GameWidget(window=window, x=5, y=140, width=self.width-10, height=150, border_radius=55,
                                        bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
-                                       img_source='images/brain1.png', game_name='I - ЛОГИКА', button_text='ИГРАТЬ', font=roboto)
+                                       img_source='images/brain1.png', game_name='I - МЫШЛЕНИЕ', button_text='ИГРАТЬ', font=roboto)
         # Меню с блоками под игры
         self.game_widget2 = GameWidget(window=window, x=5, y=320, width=self.width - 10, height=150, border_radius=55,
                                        bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
@@ -205,13 +219,13 @@ class Menu:
                                        font=roboto)
         self.top_widget = GameWidgetTop(window=window, x=0, y=0, width=self.width, height=90, border_radius=30,
                                        bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
-                                       img_source='images/tyb.png', text='USERNAME', button_text='ИГРАТЬ',
+                                       img_source='images/tyb.png', text=self.data.name, button_text='ИГРАТЬ',
                                        font=roboto, img_profile='images/profile1.png', text_level='LEVEL: 77',
                                         font_1=Srbija, img_button='images/menu.png')
         # Страница с играми на память
         self.top_widget = GameWidgetTop(window=window, x=0, y=0, width=self.width, height=90, border_radius=30,
                                         bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
-                                        img_source='images/tyb.png', text='USERNAME', button_text='ИГРАТЬ',
+                                        img_source='images/tyb.png', text=self.data.name, button_text='ИГРАТЬ',
                                         font=roboto, img_profile='images/profile1.png', text_level='LEVEL: 77',
                                         font_1=Srbija, img_button='images/menu.png')
         self.department_of_memory_menu = Rectangle(self.window, x=20, y=280,
@@ -229,7 +243,7 @@ class Menu:
         # Страница с играми на реакцию
         self.top_widget = GameWidgetTop(window=window, x=0, y=0, width=self.width, height=90, border_radius=30,
                                         bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
-                                        img_source='images/tyb.png', text='USERNAME', button_text='ИГРАТЬ',
+                                        img_source='images/tyb.png', text=self.data.name, button_text='ИГРАТЬ',
                                         font=roboto, img_profile='images/profile1.png', text_level='LEVEL: 77',
                                         font_1=Srbija, img_button='images/menu.png')
         self.department_of_reaction_menu = Rectangle(self.window, x=20, y=280,
@@ -244,11 +258,11 @@ class Menu:
         self.button_of_reaction = BlockWithGames(window=window, x=5, y=290, width=self.width - 10, height=150, border_radius=55,
                                          bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
                                          img_source='images/button.png', game_name='КНОПКА', button_text='ИГРАТЬ',
-                                         font=roboto, text_level='LEVEL: 5', text_time='THE BEST TIME: 37 sec')
+                                         font=roboto, text_level=f"Рекорд : {self.data.get_score('reaction_game')}", text_time='')
         # Страница с играми на логику
         self.top_widget = GameWidgetTop(window=window, x=0, y=0, width=self.width, height=90, border_radius=30,
                                         bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
-                                        img_source='images/tyb.png', text='USERNAME', button_text='ИГРАТЬ',
+                                        img_source='images/tyb.png', text=self.data.name, button_text='ИГРАТЬ',
                                         font=roboto, img_profile='images/profile1.png', text_level='LEVEL: 77',
                                         font_1=Srbija, img_button='images/menu.png')
         self.department_of_logic_menu = Rectangle(self.window, x=20, y=280,
@@ -266,7 +280,7 @@ class Menu:
                                                bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
                                                img_source='images/math.png', game_name='ПРИМЕРЫ',
                                                button_text='ИГРАТЬ',
-                                               font=roboto, text_level='LEVEL: 5', text_time='THE BEST TIME: 37 sec')
+                                               font=roboto, text_level=f"Рекорд: {self.data.get_score('ariphmetic')}", text_time='')
 
     def print_text(self, message, x, y, font_size=25, font_type=None, font_color='black', bold=True):
         font_type = pygame.font.Font(font_type, font_size)
@@ -310,6 +324,10 @@ class Menu:
         self.is_game_menu = False
         self.game_is_ariphmetic = False
         self.is_choice_menu = True
+        if self.data.name.strip() != '':
+            self.is_choice_menu = False
+            self.is_game_menu = True
+            return None
         self.window.blit(self.tyb_logo_second, ((self.width - self.tyb_logo_second.get_size()[0]) // 2, 19))
         self.choice_button_guest.draw_button()
         self.choice_button_reg.draw_button()
@@ -342,6 +360,27 @@ class Menu:
                         break
 
     def game_menu(self, args=None):
+        self.top_widget = GameWidgetTop(window=window, x=0, y=0, width=self.width, height=90, border_radius=30,
+                                        bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
+                                        img_source='images/tyb.png', text=self.data.name, button_text='ИГРАТЬ',
+                                        font=roboto, img_profile='images/profile1.png', text_level='LEVEL: 77',
+                                        font_1=Srbija, img_button='images/menu.png')
+        self.math_of_reaction = BlockWithGames(window=window, x=5, y=290, width=self.width - 10, height=150,
+                                               border_radius=55,
+                                               bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
+                                               img_source='images/math.png', game_name='ПРИМЕРЫ',
+                                               button_text='ИГРАТЬ',
+                                               font=roboto, text_level=f"Рекорд: {self.data.get_score('ariphmetic')}",
+                                               text_time='')
+        self.button_of_reaction = BlockWithGames(window=window, x=5, y=290, width=self.width - 10, height=150,
+                                                 border_radius=55,
+                                                 bgcolor=(255, 255, 255), border_size=2, border_color=(208, 209, 214),
+                                                 img_source='images/button.png', game_name='КНОПКА',
+                                                 button_text='ИГРАТЬ',
+                                                 font=roboto,
+                                                 text_level=f"Рекорд : {self.data.get_score('reaction_game')}",
+                                                 text_time='')
+        self.is_end_game = False
         self.game_is_started = False
         self.is_login_menu, self.is_start_menu, self.is_main_menu, self.is_registration_menu = False, False, False, False
         self.is_game_menu = True
@@ -380,6 +419,11 @@ class Menu:
                         break
 
     def registration_menu(self, args=None):
+        self.field_of_registration.draw_rectangle()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_TAB]:
+            self.need_input = True
+        self.print_text(self.input_text, (self.width - 280) // 2, self.height - 400, font_size=35, font_color='black')
         self.is_login_menu, self.is_start_menu, self.is_main_menu, self.is_registration_menu = False, False, False, True
         self.game_is_ariphmetic = False
         self.window.blit(self.registration_foto, ((self.width - self.registration_foto.get_size()[0]) // 2, 19))
@@ -388,8 +432,8 @@ class Menu:
         self.department_of_registration_top.draw_rectangle()
         self.department_of_registration_middle.draw_rectangle()
         self.department_of_registration_bottom.draw_rectangle()
-        self.registration_button_reg.draw_button()
         self.registration_button_back.draw_button()
+        self.registration_button_reg.draw_button()
         if args is not None:
             if self.registration_button_reg.collidepoint(args[0]):
                 for event in args[1]:
@@ -410,6 +454,7 @@ class Menu:
                         break
 
     def login_menu(self, args=None):
+        self.data.put_data(name=self.input_text)
         self.is_login_menu, self.is_start_menu, self.is_main_menu, self.is_registration_menu = True, False, False, False
         self.game_is_ariphmetic = False
         self.window.blit(self.login_foto, ((self.width - self.login_foto.get_size()[0]) // 2, 19))
@@ -444,9 +489,6 @@ class Menu:
         self.print_text('Train Your Brain', 110, 320, font_size=35, font_type=roboto)
         self.print_text('Персонализированная тренировка мозга', 15, 375, font_size=22, font_type=Srbija)
         self.is_login_menu, self.is_start_menu, self.is_main_menu, self.is_registration_menu = False, False, True, False
-        steps = 100  # Количество шагов анимации
-        color_step = ceil(255 // steps)
-        self.login_button.draw_button()
         self.start_button.draw_button()
         # Анимация кнопки СТАРТ
         if events is not None:
@@ -454,11 +496,6 @@ class Menu:
                 for event in events[1]:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         self.start_button.button_function_complete()
-                        break
-            if self.login_button.collidepoint(events[0]):  # Прямая анимация
-                for event in events[1]:
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        self.login_button.button_function_complete()
                         break
 
     def memory_menu(self, args=None):
@@ -570,6 +607,37 @@ class Menu:
         self.game_is_ariphmetic = False
         self.is_reaction_game = True
 
+    def end_game(self, win, args=None):
+        self.game_is_started = False
+        self.is_login_menu, self.is_start_menu, self.is_main_menu, self.is_registration_menu = False, False, False, False
+        self.is_game_menu = False
+        self.is_choice_menu = False
+        self.is_memory_menu = False
+        self.is_reaction_menu = False
+        self.is_logic_menu = False
+        self.is_remember_colors = False
+        self.game_is_ariphmetic = False
+        self.is_reaction_game = False
+        self.is_end_game = True
+        self.end_button.draw_button()
+        if args is not None:
+            if self.end_button.collidepoint(args[0]):
+                for event in args[1]:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        self.end_button.button_function_complete()
+                        break
+
+        text_font = pygame.font.Font('fonts/font1_roboto.ttf', 35)
+        text_level = text_font.render("YOU WIN", True, (0, 0, 0))
+        text_font_1 = pygame.font.Font('fonts/font1_roboto.ttf', 32)
+        text_level_1 = text_font_1.render("YOU LOSE", True, (0, 0, 0))
+        if win:
+            self.window.blit(text_level, (160, 150))
+            self.win = True
+        else:
+            self.window.blit(text_level_1, (160, 150))
+            self.win = False
+
 
 if __name__ == "__main__":
     pygame.init()
@@ -582,8 +650,6 @@ if __name__ == "__main__":
         __events = pygame.event.get()
         if menu.is_main_menu:
             menu.main_menu((pygame.mouse.get_pos(), __events))
-        elif menu.is_login_menu:
-            menu.login_menu((pygame.mouse.get_pos(), __events))
         elif menu.is_start_menu:
             menu.start_menu((pygame.mouse.get_pos(), __events))
         elif menu.is_registration_menu:
@@ -598,11 +664,13 @@ if __name__ == "__main__":
             menu.reaction_menu((pygame.mouse.get_pos(), __events))
         elif menu.is_logic_menu:
             menu.logic_menu((pygame.mouse.get_pos(), __events))
+        elif menu.is_end_game:
+            menu.end_game(win=menu.win, args=(pygame.mouse.get_pos(), __events))
         elif menu.is_remember_colors:
             current_time = pygame.time.get_ticks()
             if not menu.game_is_started:
                 game = remember_colors.RememberColorsGame(window=window, count_of_colors=9, font=roboto)
-                game.end_button_fnc_set(menu.game_menu)
+                game.end_button_fnc_set(menu.end_game)
                 menu.game_is_started = True
             if not game.is_randomized and game.is_started:
                 delta_time = current_time - game.start_time
@@ -620,6 +688,7 @@ if __name__ == "__main__":
                 game.draw_game((__events, pygame.mouse.get_pos()))
             elif game.game_ended:
                 game.end_game(__events)
+                menu.data.put_data(ariphmetic=game.get_score())
             for event in __events:
                 if event.type == game.fault_event_id or event.type == game.end_time_event_id:
                     score = event.score
@@ -634,8 +703,30 @@ if __name__ == "__main__":
                 game = reaction_game.ReactionGame(window=window, font=roboto, exit_button_fnc=menu.game_menu)
                 game.start_game()
                 menu.game_is_started = True
+            if game.game_ended:
+                menu.data.put_data(reaction_game=game.get_score(), reverse=True)
             game.draw(events=__events)
+        if menu.backspacing:
+            if menu.backspacing_wait <= 0:
+                menu.input_text = menu.input_text[:-1]
+                menu.backspacing_wait = 1000
+            menu.backspacing_wait -= 100
         for event in __events:
             if event.type == pygame.QUIT:
                 running = False
+                menu.data.save()
+            if menu.need_input and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    menu.need_input = False
+                    menu.input_text = ''
+                elif event.key == pygame.K_BACKSPACE:
+                        menu.backspacing = True
+                else:
+                    if len(menu.input_text) < 10 and event.key != pygame.K_TAB:
+                        menu.input_text += event.unicode
+            if menu.need_input and event.type == pygame.KEYUP:
+                if event.key == pygame.K_BACKSPACE:
+                    menu.input_text = menu.input_text[:-1]
+                    menu.backspacing_wait = 10000
+                    menu.backspacing = False
         pygame.display.flip()
